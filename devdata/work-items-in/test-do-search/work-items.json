@@ -1,0 +1,17 @@
+[
+  {
+      "payload": {
+         "site": "apnews.com",
+         "search": "Brazil",
+         "since": "2024-08-01T00:00:00+00:00",
+         "browser_config": {
+          "goto_params": {
+            "timeout": 0
+          }
+         }
+      },
+      "files": {
+          "orders.xlsx": "orders.xlsx"
+      }
+  }
+]
