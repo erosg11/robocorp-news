@@ -1,7 +1,7 @@
 """Application to read the apnews"""
 
 from playwright.sync_api import JSHandle
-from robocorp import log
+from loguru import logger
 
 from entitys import NewsElement
 from .NewsApp import NewsApp
@@ -20,7 +20,7 @@ class ApNewsApp(NewsApp):
         :param kwargs: Arguments to pass to Browser
         """
         super().__init__(limit_date, **kwargs)
-        log.info('Starting new ApNews App')
+        logger.info('Starting new ApNews App')
         self.url = ApNewsApp.BASE_URL
 
     def close_popup(self):
@@ -28,7 +28,7 @@ class ApNewsApp(NewsApp):
         try:
             self.bc.click('.fancybox-item.fancybox-close', timeout=100)
         except Exception:
-            log.info('No popup found, skiping...')
+            logger.info('No popup found, skiping...')
             pass
 
     def search(self, term: str):
@@ -46,7 +46,7 @@ class ApNewsApp(NewsApp):
             for element in elements:
                 news = self.to_news_element(element)
                 if news.date < self.limit_date:
-                    log.info('Too old, skipping', news)
+                    logger.info('Too old, skipping {!r}', news)
                     continue
                 yield news
                 get_elements = True

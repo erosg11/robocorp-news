@@ -1,6 +1,6 @@
 """Controller layer to Browser module."""
 from playwright.sync_api import JSHandle
-from robocorp import log
+from loguru import logger
 from yarl import URL
 
 from DataAccess import Browser
@@ -18,7 +18,8 @@ class BrowserController:
         """
         try:
             self.goto_params = kwargs.pop('goto_params', {})
-            log.info('Started browser controller with browser args', kwargs, 'and goto args', self.goto_params)
+            logger.info('Started browser controller with browser args {!r} and goto args {!r}', kwargs,
+                        self.goto_params)
             self.browser = Browser(**kwargs)
             self.open_url = partial(self.browser.open, **self.goto_params)
         except Exception as e:
