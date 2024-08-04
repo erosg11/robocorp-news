@@ -1,88 +1,127 @@
-# Template: Python - Producer-Consumer
+# Robocorp News
 
-This template leverages the new [Python framework](https://github.com/robocorp/robocorp), the [libraries](https://github.com/robocorp/robocorp/blob/master/docs/README.md#python-libraries) from to same project as well.
+Robocorp News is a modular project designed to search for news articles on websites based on given search terms and additional parameters such as date or duration in months. Initially, the project supports the AP News website, with future plans to extend compatibility to other news websites including Yahoo, Reuters, Al Jazeera, LA Times, and Gothamist.
 
-This template contains a working robot implementation that has the basic structure where the first part produces work items from an input and the second one consumes those newly created output work items.
+## Table of Contents
 
-![process.png](./docs/process.png)
+<details>
+<ol>
+    <li><a rel="norrefer" href="#overview">Overview</a></li>
+    <li><a rel="norrefer" href="#features">Features</a></li>
+    <li><a rel="norrefer" href="#usage">Usage</a></li>
+    <ol>
+        <li><a rel="norrefer" href="#input-parameters">Input Parameters</a></li>
+        <li><a rel="norrefer" href="#output-parameters">Output</a></li>
+    </ol>
+    <li><a rel="norrefer" href="#tasks">Tasks</a></li>
+    <ol>
+        <li><a rel="norrefer" href="#task-1-data-generation">Task 1: Data Generation</a></li>
+        <li><a rel="norrefer" href="#task-2-image-donwload">Task2: Image Download</a></li>
+        <li><a rel="norrefer" href="#task-3-data-analysis-and-artifact-generation">Task 3: Data Analysis and Artifact Generation</a></li>
+    </ol>
+    <li><a rel="norrefer" href="#installation">Installation</a></li>
+    <li><a rel="norrefer" href="#future-work">Future Work</a></li>
+    <li><a rel="norrefer" href="#contributing">Contributing</a></li>
+    <li><a rel="norrefer" href="#license">License</a></li>
+<ol>
+</details>
 
-The template tries to keep the amount of functional code at a minimum so you have less to clear out and replace with your own implementation, but some functional logic is needed to have the template working and guiding the key parts.
+## Overview
 
-> We recommended checking out the article "[Using work items](https://robocorp.com/docs/development-guide/control-room/work-items)" before diving in.
+Robocorp News automates the process of fetching news articles based on user-defined search terms and parameters. The project is built to be modular, allowing for easy integration of additional news sources in the future, and opertaions. The core functionality involves generating search results, processing the data, and producing final artifacts which include images and a consolidated spreadsheet.
+
+## Features
+
+- Search news articles based on specified term.
+- Support for date-specific searches or searches within a given time limit.
+- Modular design for future integration with additional news websites.
+- Generation of comprehensive output including titles, descriptions, images, search term frequency, and monetary mentions.
+- Creation of a consolidated spreadsheet and image download functionality.
+
+## Usage
+
+### Input Parameters
+
+The project accepts the following input parameters through work items:
+
+- **Search Term**: The term to be searched within the news articles.
+- **Website**: The website to search for news articles (currently supports AP News).
+- **Since at**: Specific date in ISO format or the number of moths to look back for searching news articles.
+- **Browser Config (Optional)**: Aditional configurations to help the browser to do the search.
+
+### Output
+
+The output is structured in a multi-stage process:
+
+- Initial data including titles, descriptions, image links, search term, and date.
+- Downloaded images associated with the news articles.
+- A spreadsheet summarizing the data, including the frequency of the search term in titles and descriptions, and mentions of monetary amounts.
+
 
 ## Tasks
 
-The robot is split into two tasks, meant to run as separate steps in Control Room. The first task generates (produces) data, and the second one reads (consumes) and processes that data.
+![Steps diagram](./docs/diagram.png "Steps diagram")
 
-### The first task (the producer)
+> This diagram was generated using the `diagram_gen.py` program.
 
-- Load the example Excel file from work item
-- Split the Excel file into work items for the consumer
+### Task 1: Data Generation
 
-### The second task (the consumer)
+- **Description**: This task generates initial data based on the provided search term, website, and the date or month parameters. The output includes titles, descriptions, image links, search term and date.
+- **Inputs**: Search Term, Website, Date/Months
+- **Outputs**: Work items containing titles, descriptions, image links, search term, and date.
 
-> We recommended checking out the article "[Work item exception handling](https://robocorp.com/docs/development-guide/control-room/work-items#work-item-exception-handling)" before diving in.
+### Task 2: Image Download
 
-- Loop through all work items in the queue and access the payloads from the previous step
+- **Description**: This task reads the generated work items, downloads the associated images, and updates the work items with the downloaded images.
+- **Inputs**: Work items from Task 1
+- **Outputs**: Updated work items with downloaded images.
 
-## Local testing
+### Task 3: Data Analysis and Artifact Generation
 
-For best experience to test the work items in this example we recommend using [Robocorp Code -extensions for VS Code](https://robocorp.com/docs/developer-tools/visual-studio-code/extension-features). With the Robocorp Code extension you can simply run and [select the input work items](https://robocorp.com/docs/developer-tools/visual-studio-code/extension-features#using-work-items) to use, create inputs to simulate error cases, and so on.
+- **Description**: This task analyzes the data to count the frequency of the search term in titles and descriptions, identifies any monetary mentions, and compiles a consolidated spreadsheet. The final output includes saved images and the spreadsheet as artifacts.
+- **Inputs**: Work items from Task 2
+- **Outputs**: Artifacts including images and a consolidated spreadsheet.
 
-## Extending the template
 
-> The [producer-consumer](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) model is not limited to two steps, it can continue so that the consumer generates further work items for the next step and so on.
+## Installation
 
-Here's how you can add a third step, let's say a **reporter**, which will collect inputs from the previous one (the **consumer**) and generate a simple report with the previously created data. But first, see below what you need to add extra:
+To install and run the Robocorp News project, follow these steps:
 
-### The `reporter` step code
+Clone the repository.
+Open the visual studio code.
+Instal robocorp extensions:
 
-```python
-@task
-def reporter():
-    """Collect and combine all the consumer outputs into a single report."""
-    complete_orders = sum("complete" in item.payload["Order"] for item in workitems.inputs)
-    print(f"Complete orders: {complete_orders}")
+![Robocopr extensions](docs/robocorp-extensions.png "Robocorp extensions")
+
+The Robocorp extensions will automatically configure the environment.
+
+```bash
+git clone https://github.com/erosg11/robocorp-news.git
+
+cd robocorp-news
+
+code .
+
+# Use the robocorp extensions to automatically configure your enviroment
 ```
 
-And as you can see, we collect some `"Order"` info from the previously created outputs, but we don't have yet such outputs created in the previous step (the **consumer**), so let's create them:
+## Future Work
 
-```python
-@task
-def consumer():
-    """Process all the produced input Work Items from the previous step."""
-    for item in workitems.inputs:
-        try:
-            ...
-            workitems.outputs.create(payload={"Order": f"{name} is complete"})
-            item.done()
-        except AssertionError as err:
-            ...
-```
+- Integration with additional news websites: Yahoo, Reuters, Al Jazeera, LA Times, and Gothamist.
+- Enhanced data analysis capabilities.
 
-The magic happens in this single line added right before the `item.done()` part: `workitems.outputs.create(payload={"Order": f"{name} is complete"})`. This creates a new output for every processed input with an `"Order"` field in the payload data. This is retrieved in the next step (**reporter**) through `item.payload["Order"]`.
+## Contributing
+We welcome contributions from the community. If you wish to contribute, please follow these steps:
 
-### The `reporter` task entry
+1. Fork the repository.
+2. Create a feature branch (git checkout -b feature/ISSUE-`N`).
+3. Commit your changes (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature-branch`).
+5. Open a pull request.
 
-All good on the code side, but we need now to make this new task visible and runnable right in our [*robot.yaml*](./robot.yaml) configuration. So add this under `tasks:`:
+Please ensure your code adheres to the project's coding standards and includes appropriate tests.
 
-```yaml
-Reporter:
-    shell: python -m robocorp.tasks run tasks.py -t reporter
-```
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-Now you're good to go, just run the **consumer** again (so you'll have output items created), then run the newly introduced 3rd step called **reporter**.
-
-
-----
-
-🚀 Now, go get'em
-
-Start writing Python and remember that the AI/LLM's out there are getting really good and creating Python code specifically.
-
-👉 Try out [Robocorp ReMark 💬](https://chat.robocorp.com)
-
-For more information, do not forget to check out the following:
-- [Robocorp Documentation -site](https://robocorp.com/docs)
-- [Portal for more examples](https://robocorp.com/portal)
-- Follow our main [robocorp -repository](https://github.com/robocorp/robocorp) as it is the main location where we developed the libraries and the framework.
+For more information or any questions, please open a issue.
