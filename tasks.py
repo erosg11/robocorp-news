@@ -1,11 +1,14 @@
+from copy import deepcopy
 from pathlib import Path
+from typing import Type
 
+from RPA.Excel.Files import Files as Excel
 from robocorp import workitems, log
 from robocorp.tasks import get_output_dir, task
-from RPA.Excel.Files import Files as Excel
-from entitys import BrowserException
+from aiohttp import ClientTimeout
+
 from Application import ApNewsApp, NewsApp, ImageDownloader
-from typing import Type
+from entitys import BrowserException, ImageDownloadException
 
 APPS: dict[str, Type[NewsApp]] = {
     'apnews.com': ApNewsApp,
@@ -66,3 +69,29 @@ def do_search():
             log.exception('Error while accessing', err.url)
             item.fail("BUSINESS", code="BROWSER", message=f'Error: {err!r}, URL: {err.url}')
 
+
+@task
+def download_image():
+    log.info('Starting image download')
+    output_dir = get_output_dir() or Path("output")
+    output_dir /= 'imgs'
+    output_dir.mkdir(exist_ok=True, parents=True)
+    with ImageDownloader(output_dir=output_dir,
+                         headers={'user-agent':
+                                      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                                      '(KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 '
+                                      'OPR/68.0.3618.197'},
+                         timeout=ClientTimeout(20),
+                         ) as im:
+        for item in workitems.inputs:
+            copy_item = deepcopy(item.payload)
+            url = copy_item.get('picture_url')
+            if url is None:
+                log.info('Image not found to', repr(copy_item.get('title')))
+                workitems.outputs.create(copy_item)
+                continue
+            try:
+                workitems.outputs.create(copy_item, files=im.download_image(url))
+            except ImageDownloadException as err:
+                log.exception('Error while downloading Image', err.url)
+                item.fail('BUSINESS', code='IMAGE_DOWNLOAD', message=f'Error: {err!r}, URL: {err.url!r} status code: {err.status}')

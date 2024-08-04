@@ -8,6 +8,8 @@ tasks:
     shell: python -m robocorp.tasks run tasks.py -t consumer
   DoSearch:
     shell: python -m robocorp.tasks run tasks.py -t do_search
+  DownloadImage:
+    shell: python -m robocorp.tasks run tasks.py -t download_image
 
 environmentConfigs:
   - environment_windows_amd64_freeze.yaml

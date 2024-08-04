@@ -1,1 +1,1 @@
-from .exceptions import BrowserException
+from .exceptions import BrowserException, ImageDownloadException
