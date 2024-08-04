@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from robocorp import log
+from loguru import logger
 
 from Controllers import ImageController
 
@@ -23,7 +23,7 @@ class ImageDownloader:
         :param url: URL to download.
         :return: Downloaded image path.
         """
-        log.debug('Downloading image:', url)
+        logger.debug('Downloading image: {!r}', url)
         return self.ic.download_image(url)
 
     def __enter__(self):
