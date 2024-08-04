@@ -100,5 +100,5 @@ def excel_writer():
             excel.append_row(element.model_dump(exclude={'search_phrase'}, mode='json'))
             retry(
                 wait=wait_exponential_jitter(.1, 5),
-                stop=stop_after_attempt(50) | stop_after_delay(30)
+                stop=stop_after_attempt(50) | stop_after_delay(30),
             )(workitems.outputs.create)(files=output)
