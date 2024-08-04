@@ -18,6 +18,7 @@ APPS: dict[str, Type[NewsApp]] = {
 
 
 @task
+@logger.catch(reraise=True, message='Error while Doing Search')
 def do_search():
     """Task to search and create work items to the next task"""
 
@@ -39,6 +40,7 @@ def do_search():
 
 
 @task
+@logger.catch(reraise=True, message='Error while Downloading Image')
 def download_image():
     """Task to download an image from the URLs in the work items"""
     logger.info('Starting image download')
@@ -67,6 +69,7 @@ def download_image():
 
 
 @task
+@logger.catch(reraise=True, message='Error while writing Excel')
 def excel_writer():
     """Task to read data from work items and save in the excel file"""
     logger.info('Starting excel writer')
