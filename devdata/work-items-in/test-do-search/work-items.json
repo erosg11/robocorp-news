@@ -2,16 +2,17 @@
   {
       "payload": {
          "site": "apnews.com",
-         "search": "Brazil",
-         "since": "2024-08-01T00:00:00+00:00",
+         "search": "technology",
+         "since": 1,
          "browser_config": {
+          "screenshot": "only-on-failure",
+          "headless": false,
+          "slowmo": 100,
           "goto_params": {
             "timeout": 0
           }
          }
       },
-      "files": {
-          "orders.xlsx": "orders.xlsx"
-      }
+      "files": {}
   }
 ]

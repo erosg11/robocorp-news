@@ -2,13 +2,13 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Type
 
-from RPA.Excel.Files import Files as Excel
+import regex
+from aiohttp import ClientTimeout
 from robocorp import workitems, log
 from robocorp.tasks import get_output_dir, task
-from aiohttp import ClientTimeout
 
-from Application import ApNewsApp, NewsApp, ImageDownloader
-from entitys import BrowserException, ImageDownloadException
+from Application import ApNewsApp, NewsApp, ImageDownloader, ExcelApp
+from entitys import BrowserException, ImageDownloadException, NewsElement
 
 APPS: dict[str, Type[NewsApp]] = {
     'apnews.com': ApNewsApp,
@@ -16,46 +16,9 @@ APPS: dict[str, Type[NewsApp]] = {
 
 
 @task
-def producer():
-    """Split Excel rows into multiple output Work Items for the next step."""
-    output = get_output_dir() or Path("output")
-    filename = "orders.xlsx"
-
-    for item in workitems.inputs:
-        path = item.get_file(filename, output / filename)
-
-        excel = Excel()
-        excel.open_workbook(path)
-        rows = excel.read_worksheet_as_table(header=True)
-
-        for row in rows:
-            payload = {
-                "Name": row["Name"],
-                "Zip": row["Zip"],
-                "Product": row["Item"],
-            }
-            workitems.outputs.create(payload)
-
-
-@task
-def consumer():
-    """Process all the produced input Work Items from the previous step."""
-    for item in workitems.inputs:
-        try:
-            name = item.payload["Name"]
-            zipcode = item.payload["Zip"]
-            product = item.payload["Product"]
-            print(f"Processing order: {name}, {zipcode}, {product}")
-            assert 1000 <= zipcode <= 9999, "Invalid ZIP code"
-            item.done()
-        except AssertionError as err:
-            item.fail("BUSINESS", code="INVALID_ORDER", message=str(err))
-        except KeyError as err:
-            item.fail("APPLICATION", code="MISSING_FIELD", message=str(err))
-
-
-@task
 def do_search():
+    """Task to search and create work items to the next task"""
+
     log.info('Starting search')
     for item in workitems.inputs:
         try:
@@ -64,7 +27,7 @@ def do_search():
             app.search(item.payload['search'])
             for result in app.get_news():
                 log.debug('Got:', result)
-                workitems.outputs.create(result.model_dump(mode='json'))
+                workitems.outputs.create(result.model_dump(mode='json', exclude_none=True))
         except BrowserException as err:
             log.exception('Error while accessing', err.url)
             item.fail("BUSINESS", code="BROWSER", message=f'Error: {err!r}, URL: {err.url}')
@@ -72,6 +35,7 @@ def do_search():
 
 @task
 def download_image():
+    """Task to download an image from the URLs in the work items"""
     log.info('Starting image download')
     output_dir = get_output_dir() or Path("output")
     output_dir /= 'imgs'
@@ -94,4 +58,36 @@ def download_image():
                 workitems.outputs.create(copy_item, files=im.download_image(url))
             except ImageDownloadException as err:
                 log.exception('Error while downloading Image', err.url)
-                item.fail('BUSINESS', code='IMAGE_DOWNLOAD', message=f'Error: {err!r}, URL: {err.url!r} status code: {err.status}')
+                item.fail('BUSINESS', code='IMAGE_DOWNLOAD',
+                          message=f'Error: {err!r}, URL: {err.url!r} status code: {err.status}')
+
+
+@task
+def excel_writer():
+    """Task to read data from work items and save in the excel file"""
+    log.info('Starting excel writer')
+    output_dir = get_output_dir() or Path("output")
+    output_dir /= 'excel'
+    output_dir.mkdir(exist_ok=True, parents=True)
+    excel_filename = output_dir / 'data.xlsx'
+    with ExcelApp(excel_filename) as excel:
+        for item in workitems.inputs:
+            log.debug('Get the item', item)
+            element = NewsElement(**item.payload)
+            file = item.files
+            if file:
+                element.file = item.get_file(file[0], output_dir / file[0])
+                element.filename = element.file.name
+                workitems.outputs.create(files=[element.file, excel_filename])
+            else:
+                log.info('No image found for the item', element)
+                element.file = ''
+                element.filename = ''
+            element.count_matches = f"{element.title or ''}\n{element.description or ''}".upper().count(
+                element.search_phrase.upper()
+            )
+            element.has_dollars = 'TRUE' if bool(regex.search(
+                r'(?P<dollar_sign>\$\s*)?(?:\d+,)*\d+(?:\.\d*)?(?(dollar_sign)|\s+(?:dollars?|USD))',
+                f'{element.title or ""}\n{element.description or ""}', flags=regex.IGNORECASE
+            )) else 'FALSE'
+            excel.append_row(element.model_dump(exclude={'search_phrase'}, mode='json'))

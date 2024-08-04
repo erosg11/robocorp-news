@@ -13,7 +13,9 @@ dependencies:
   - robocorp-truststore=0.8.0     # https://pypi.org/project/robocorp-truststore/
   - aiohttp=3.9.5
   - yarl=1.9.3 
+  - regex=2023.10.3
   - pip:
     - rpaframework==28.0.0        # https://rpaframework.org/releasenotes.html
     - robocorp==1.4.0             # https://pypi.org/project/robocorp
     - robocorp-browser==2.2.1     # https://pypi.org/project/robocorp-browser
+    - diagrams==0.23.4

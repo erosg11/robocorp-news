@@ -1,2 +1,3 @@
+"""Data Access layer"""
 from .Browser import Browser
-from .ImageAccess import ImageAccess, RequestError
+from .ImageAccess import ImageAccess
