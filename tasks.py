@@ -18,8 +18,12 @@ APPS: dict[str, Type[NewsApp]] = {
 
 
 @task
-@logger.catch(reraise=True, message='Error while Doing Search')
 def do_search():
+    _do_search()
+
+
+@logger.catch(reraise=True, message='Error while Doing Search')
+def _do_search():
     """Task to search and create work items to the next task"""
 
     logger.info('Starting search')
@@ -40,8 +44,12 @@ def do_search():
 
 
 @task
-@logger.catch(reraise=True, message='Error while Downloading Image')
 def download_image():
+    _download_image()
+
+
+@logger.catch(reraise=True, message='Error while Downloading Image')
+def _download_image():
     """Task to download an image from the URLs in the work items"""
     logger.info('Starting image download')
     output_dir = get_output_dir() or Path("output")
@@ -69,8 +77,12 @@ def download_image():
 
 
 @task
-@logger.catch(reraise=True, message='Error while writing Excel')
 def excel_writer():
+    _excel_writer()
+
+
+@logger.catch(reraise=True, message='Error while writing Excel')
+def _excel_writer():
     """Task to read data from work items and save in the excel file"""
     logger.info('Starting excel writer')
     output_dir = get_output_dir() or Path("output")
@@ -81,11 +93,9 @@ def excel_writer():
             logger.debug('Get the item {!r}', item)
             element = NewsElement(**item.payload)
             file = item.files
-            output = [excel_filename]
             if file:
                 element.file = item.get_file(file[0], output_dir / file[0])
                 element.filename = element.file.name
-                output.append(element.file)
             else:
                 logger.info('No image found for the item {!r}', element)
                 element.file = ''
