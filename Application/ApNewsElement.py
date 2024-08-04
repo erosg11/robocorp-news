@@ -1,4 +1,4 @@
-from datetime import datetime
+from warnings import deprecated
 
 from Controllers import BrowserController
 from .NewsElement import NewsElement
@@ -6,6 +6,7 @@ from .NewsElement import NewsElement
 from playwright.sync_api import JSHandle
 
 
+@deprecated('Deprecated class, you should use ApNewsApp.to_news_element')
 class ApNewsElement(NewsElement):
 
     @classmethod

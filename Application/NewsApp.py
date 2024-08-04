@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Sequence
 
+from robocorp import log
 from yarl import URL
 from dateutil.relativedelta import relativedelta
 
@@ -9,8 +10,8 @@ from Controllers import BrowserController
 from playwright.sync_api import JSHandle
 from datetime import datetime, timedelta, timezone
 
-
 TZ = timezone(timedelta(hours=0))
+
 
 class NewsApp(ABC):
     matches: list[JSHandle] = []
@@ -27,6 +28,7 @@ class NewsApp(ABC):
     def update_params(self, **kwargs):
         self.params |= kwargs
         self.url = self.url.update_query(self.params)
+        log.info('Going to', self.url)
         self.bc.open(str(self.url))
 
     @abstractmethod
@@ -40,3 +42,7 @@ class NewsApp(ABC):
     @abstractmethod
     def next_page(self):
         raise NotImplementedError('next_page method must be implemented')
+
+    @abstractmethod
+    def to_news_element(self, element: JSHandle) -> NewsElement:
+        raise NotImplementedError('to_news_element method must be implemented')

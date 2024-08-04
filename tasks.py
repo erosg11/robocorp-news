@@ -1,11 +1,10 @@
-from datetime import date
 from pathlib import Path
 
-from robocorp import workitems
+from robocorp import workitems, log
 from robocorp.tasks import get_output_dir, task
 from RPA.Excel.Files import Files as Excel
 from entitys import BrowserException
-from Application import ApNewsApp, NewsApp
+from Application import ApNewsApp, NewsApp, ImageDownloader
 from typing import Type
 
 APPS: dict[str, Type[NewsApp]] = {
@@ -54,12 +53,16 @@ def consumer():
 
 @task
 def do_search():
+    log.info('Starting search')
     for item in workitems.inputs:
         try:
             app = APPS[item.payload["site"]](
                 item.payload['since'], **item.payload['browser_config'])
             app.search(item.payload['search'])
             for result in app.get_news():
+                log.debug('Got:', result)
                 workitems.outputs.create(result.model_dump(mode='json'))
         except BrowserException as err:
+            log.exception('Error while accessing', err.url)
             item.fail("BUSINESS", code="BROWSER", message=f'Error: {err!r}, URL: {err.url}')
+
