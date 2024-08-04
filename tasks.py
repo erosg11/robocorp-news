@@ -98,7 +98,3 @@ def excel_writer():
                 f'{element.title or ""}\n{element.description or ""}', flags=regex.IGNORECASE
             )) else 'FALSE'
             excel.append_row(element.model_dump(exclude={'search_phrase'}, mode='json'))
-            retry(
-                wait=wait_exponential_jitter(.1, 5),
-                stop=stop_after_attempt(50) | stop_after_delay(30),
-            )(workitems.outputs.create)(files=output)
