@@ -30,7 +30,7 @@ def _do_search():
     for item in workitems.inputs:
         try:
             app = APPS[item.payload["site"]](
-                item.payload['since'], **item.payload['browser_config'])
+                item.payload['since'], item.payload.get('browser_timeout', 30), **item.payload['browser_config'])
             app.search(item.payload['search'], item.payload.get('categories'))
             for i, result in enumerate(app.get_news()):
                 logger.debug('Got: {!r}', result)

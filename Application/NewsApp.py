@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod
 from typing import Sequence
 
 from loguru import logger
+from selenium.webdriver.remote.webelement import WebElement
 from yarl import URL
 from dateutil.relativedelta import relativedelta
 
 from entitys import NewsElement
 from Controllers import BrowserController
-from playwright.sync_api import JSHandle
 from datetime import datetime, timedelta, timezone
 
 TZ = timezone(timedelta(hours=0))
@@ -21,7 +21,7 @@ class NewsApp(ABC):
     params: dict[str, str | int] | None = None
     search_phrase: str | None = None
 
-    def __init__(self, limit_date: str | int, **kwargs):
+    def __init__(self, limit_date: str | int, browser_timeout: float = 30, **kwargs):
         """
         Initialize the NewsApp class
         :param limit_date: The date limit to collect news data for
@@ -31,7 +31,7 @@ class NewsApp(ABC):
             if isinstance(limit_date, str) else datetime.now(tz=TZ) - relativedelta(months=limit_date)
         self.params = {}
         self.url: URL | None = None
-        self.bc = BrowserController(**kwargs)
+        self.bc = BrowserController(browser_timeout, **kwargs)
 
     def update_params(self, **kwargs):
         """Update the params dict with new params and open the url based in the new params"""
@@ -63,6 +63,6 @@ class NewsApp(ABC):
         raise NotImplementedError('next_page method must be implemented')
 
     @abstractmethod
-    def to_news_element(self, element: JSHandle) -> NewsElement:
+    def to_news_element(self, element: WebElement) -> NewsElement:
         """Convert element to NewsElement"""
         raise NotImplementedError('to_news_element method must be implemented')
