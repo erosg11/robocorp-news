@@ -28,11 +28,12 @@ Robocorp News is a modular project designed to search for news articles on websi
 
 ## Overview
 
-Robocorp News automates the process of fetching news articles based on user-defined search terms and parameters. The project is built to be modular, allowing for easy integration of additional news sources in the future, and opertaions. The core functionality involves generating search results, processing the data, and producing final artifacts which include images and a consolidated spreadsheet.
+Robocorp News automates the process of fetching news articles based on user-defined search terms, category and parameters. The project is built to be modular, allowing for easy integration of additional news sources in the future, and opertaions. The core functionality involves generating search results, processing the data, and producing final artifacts which include images and a consolidated spreadsheet.
 
 ## Features
 
 - Search news articles based on specified term.
+- Filter based in categories
 - Support for date-specific searches or searches within a given time limit.
 - Modular design for future integration with additional news websites.
 - Generation of comprehensive output including titles, descriptions, images, search term frequency, and monetary mentions.
@@ -45,6 +46,7 @@ Robocorp News automates the process of fetching news articles based on user-defi
 The project accepts the following input parameters through work items:
 
 - **Search Term**: The term to be searched within the news articles.
+- **Categories**: Categories to be filtered.
 - **Website**: The website to search for news articles (currently supports AP News).
 - **Since at**: Specific date in ISO format or the number of moths to look back for searching news articles.
 - **Browser Config (Optional)**: Aditional configurations to help the browser to do the search.
@@ -66,8 +68,8 @@ The output is structured in a multi-stage process:
 
 ### Task 1: Data Generation
 
-- **Description**: This task generates initial data based on the provided search term, website, and the date or month parameters. The output includes titles, descriptions, image links, search term and date.
-- **Inputs**: Search Term, Website, Date/Months
+- **Description**: This task generates initial data based on the provided search term, categories, website, and the date or month parameters. The output includes titles, descriptions, image links, search term and date.
+- **Inputs**: Search Term, Categories, Website, Date/Months
 - **Outputs**: Work items containing titles, descriptions, image links, search term, and date.
 
 ### Task 2: Image Download

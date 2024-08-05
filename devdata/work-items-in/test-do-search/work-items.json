@@ -3,6 +3,7 @@
       "payload": {
          "site": "apnews.com",
          "search": "technology",
+         "categories": ["stories", "videos", "blablabla"],
          "since": 1,
          "browser_config": {
           "screenshot": "only-on-failure",

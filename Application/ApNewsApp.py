@@ -31,10 +31,35 @@ class ApNewsApp(NewsApp):
             logger.info('No popup found, skiping...')
             pass
 
-    def search(self, term: str):
+    def get_categories(self) -> dict[str, str]:
+        filter_ = self.bc.get_all('ul.SearchFilter-items')
+
+        if not filter_:
+            logger.warning('Not found filter')
+            return {}
+
+        checkboxes = filter_[0].query_selector_all('div.CheckboxInput')
+        filters = {x.inner_text().upper(): x.query_selector('input').get_attribute('value') for x in checkboxes}
+        return filters
+
+    def search(self, term: str, categories: list[str] | None = None):
         """Search apnews for a term"""
         self.update_params(q=term, s=3, p=self.page)
         self.close_popup()
+        if categories:
+            site_categories = self.get_categories()
+            uuids_to_search = []
+            append_uuid_to_search = uuids_to_search.append
+            for c in categories:
+                site_category = site_categories.get(c.upper())
+                if site_category is None:
+                    logger.warning('Category {!r} not found', c)
+                    continue
+                append_uuid_to_search(site_category)
+            if not uuids_to_search:
+                raise ValueError('No categories found')
+            self.update_params(f2=uuids_to_search)
+            self.close_popup()
         self.search_phrase = term
 
     def get_news(self) -> Sequence[NewsElement]:
