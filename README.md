@@ -23,7 +23,7 @@ Robocorp News is a modular project designed to search for news articles on websi
     <li><a rel="norrefer" href="#future-work">Future Work</a></li>
     <li><a rel="norrefer" href="#contributing">Contributing</a></li>
     <li><a rel="norrefer" href="#license">License</a></li>
-<ol>
+</ol>
 </details>
 
 ## Overview
@@ -46,10 +46,30 @@ Robocorp News automates the process of fetching news articles based on user-defi
 The project accepts the following input parameters through work items:
 
 - **Search Term**: The term to be searched within the news articles.
-- **Categories**: Categories to be filtered.
+- **Categories (Optional)**: List of categories to be filtered.
 - **Website**: The website to search for news articles (currently supports AP News).
 - **Since at**: Specific date in ISO format or the number of moths to look back for searching news articles.
-- **Browser Config (Optional)**: Aditional configurations to help the browser to do the search.
+- **Browser timeout**: Timeout used for screen switching time in the browser 
+- **Browser Config (Optional)**: Additional configurations to help the browser to do the search.
+
+Example:
+
+````json5
+{
+  "site": "apnews.com",
+  "search": "technology",
+  "categories": [
+    "stories",
+    "videos",
+    "blablabla"  // Will not be found
+  ],
+  "since": "2024-08-03T00:00:00+00:00",  // Can be a number
+  "browser_timeout": 600,
+  "browser_config": {
+    "headless": true
+  }
+}
+````
 
 ### Output
 
