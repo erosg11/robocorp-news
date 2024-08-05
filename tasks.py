@@ -31,7 +31,7 @@ def _do_search():
         try:
             app = APPS[item.payload["site"]](
                 item.payload['since'], **item.payload['browser_config'])
-            app.search(item.payload['search'])
+            app.search(item.payload['search'], item.payload.get('categories'))
             for i, result in enumerate(app.get_news()):
                 logger.debug('Got: {!r}', result)
                 workitems.outputs.create(result.model_dump(mode='json', exclude_none=True))

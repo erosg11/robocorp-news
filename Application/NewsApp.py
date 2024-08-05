@@ -41,10 +41,11 @@ class NewsApp(ABC):
         self.bc.open(str(self.url))
 
     @abstractmethod
-    def search(self, term: str):
+    def search(self, term: str, categories: list[str] | None = None):
         """
         Search news data for the term
         :param term: The term to search for
+        :param categories: The categories to search for
         """
         raise NotImplementedError('Search method must be implemented')
 
