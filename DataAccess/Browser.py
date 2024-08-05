@@ -52,3 +52,6 @@ class Browser:
     def url(self) -> str:
         """Get the URL of the current page."""
         return self._lib.get_location()
+
+    def run_js(self, js: str):
+        return self._lib.execute_javascript(js)

@@ -41,17 +41,13 @@ class ApNewsApp(NewsApp):
 
         filter_ = filter_[0]
 
-        if not filter_.is_displayed():
-            self.bc.click('css:.SearchFilter-heading')
-        
-        see_all = self.bc.get_all('css:span.seeAllText')
-
-        if see_all and see_all[0].is_displayed():
-            see_all[0].click()
+        categories = self.bc.run_js(
+            'return Array.from(document.getElementsByClassName("CheckboxInput")).map((x) => (x.innerText));')
 
         checkboxes = filter_.find_elements(By.CSS_SELECTOR, 'div.CheckboxInput')
-        filters = {x.find_element(By.CSS_SELECTOR, 'span').text.upper(): x.find_element(By.CSS_SELECTOR, 'input'
-                                                          ).get_attribute('value') for x in checkboxes}
+
+        uuids = [x.find_element(By.CSS_SELECTOR, 'input').get_attribute('value') for x in checkboxes]
+        filters = {c: u for c, u in zip(categories, uuids)}
         return filters
 
     def search(self, term: str, categories: list[str] | None = None):

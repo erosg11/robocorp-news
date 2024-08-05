@@ -96,3 +96,6 @@ class BrowserController:
         if sub_element:
             return sub_element[0].text
         return None
+
+    def run_js(self, js):
+        return self.browser.run_js(js)
