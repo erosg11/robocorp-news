@@ -41,11 +41,10 @@ class ApNewsApp(NewsApp):
 
         filter_ = filter_[0]
 
-        categories = self.bc.run_js(
-            'return Array.from(document.getElementsByClassName("CheckboxInput")).map((x) => (x.innerText));')
-
         checkboxes = filter_.find_elements(By.CSS_SELECTOR, 'div.CheckboxInput')
 
+        categories = [c.get_attribute('innerText') for c in checkboxes]
+        
         uuids = [x.find_element(By.CSS_SELECTOR, 'input').get_attribute('value') for x in checkboxes]
         filters = {c: u for c, u in zip(categories, uuids)}
         return filters
