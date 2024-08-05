@@ -5,13 +5,9 @@
          "search": "technology",
          "categories": ["stories", "videos", "blablabla"],
          "since": 1,
+         "browser_timeout": 600,
          "browser_config": {
-          "screenshot": "only-on-failure",
-          "headless": false,
-          "slowmo": 100,
-          "goto_params": {
-            "timeout": 0
-          }
+          "headless": true
          }
       },
       "files": {}

@@ -1,7 +1,8 @@
 """Application to read the apnews"""
 
-from playwright.sync_api import JSHandle
 from loguru import logger
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 from entitys import NewsElement
 from .NewsApp import NewsApp
@@ -13,33 +14,44 @@ class ApNewsApp(NewsApp):
     """Application class to read the apnews"""
     BASE_URL = URL('https://apnews.com/search')
 
-    def __init__(self, limit_date: str | int, **kwargs):
+    def __init__(self, limit_date: str | int, browser_timeout: float=30, **kwargs):
         """
         Initialize the ApNewsApp.
         :param limit_date: Date limit to look news for
         :param kwargs: Arguments to pass to Browser
         """
-        super().__init__(limit_date, **kwargs)
+        super().__init__(limit_date, browser_timeout, **kwargs)
         logger.info('Starting new ApNews App')
         self.url = ApNewsApp.BASE_URL
 
     def close_popup(self):
         """Close the annoying popup"""
         try:
-            self.bc.click('.fancybox-item.fancybox-close', timeout=100)
+            self.bc.click('css:.fancybox-item.fancybox-close')
         except Exception:
             logger.info('No popup found, skiping...')
             pass
 
     def get_categories(self) -> dict[str, str]:
-        filter_ = self.bc.get_all('ul.SearchFilter-items')
+        filter_ = self.bc.get_all('xpath://ul[@class="SearchFilter-items"]')
 
         if not filter_:
             logger.warning('Not found filter')
             return {}
 
-        checkboxes = filter_[0].query_selector_all('div.CheckboxInput')
-        filters = {x.inner_text().upper(): x.query_selector('input').get_attribute('value') for x in checkboxes}
+        filter_ = filter_[0]
+
+        if not filter_.is_displayed():
+            self.bc.click('css:.SearchFilter-heading')
+        
+        see_all = self.bc.get_all('css:span.seeAllText')
+
+        if see_all and see_all[0].is_displayed():
+            see_all[0].click()
+
+        checkboxes = filter_.find_elements(By.CSS_SELECTOR, 'div.CheckboxInput')
+        filters = {x.find_element(By.CSS_SELECTOR, 'span').text.upper(): x.find_element(By.CSS_SELECTOR, 'input'
+                                                          ).get_attribute('value') for x in checkboxes}
         return filters
 
     def search(self, term: str, categories: list[str] | None = None):
@@ -67,7 +79,7 @@ class ApNewsApp(NewsApp):
         get_elements = True
         while get_elements:
             get_elements = False
-            elements = self.bc.get_all('div.SearchResultsModule-results div.PagePromo')
+            elements = self.bc.get_all('css:div.SearchResultsModule-results div.PagePromo')
             for element in elements:
                 news = self.to_news_element(element)
                 if news.date < self.limit_date:
@@ -84,7 +96,7 @@ class ApNewsApp(NewsApp):
         self.update_params(p=self.page)
         self.close_popup()
 
-    def to_news_element(self, element: JSHandle) -> NewsElement:
+    def to_news_element(self, element: WebElement) -> NewsElement:
         """Convert the apnews element into a NewsElement"""
         return NewsElement(
             title=self.bc.get_text_from_element(element, '.PagePromo-title'),
